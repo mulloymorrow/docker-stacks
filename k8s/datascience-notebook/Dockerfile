@@ -84,4 +84,4 @@ RUN julia -e 'using IJulia' && julia -e 'using Gadfly' && julia -e 'using RDatas
 
 
 
-CMD ./usr/local/bin/start-singleuser.sh
+CMD /usr/local/bin/start-singleuser.sh
