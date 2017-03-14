@@ -100,5 +100,6 @@ RUN conda install --quiet --yes -c anaconda statsmodels=0.8.0 && conda clean -ti
 
 
 ENV KERAS_BACKEND=tensorflow
+ADD examples /home/$NB_USER/work/examples
 
 CMD /usr/local/bin/start-singleuser.sh
