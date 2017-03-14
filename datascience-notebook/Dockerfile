@@ -4,6 +4,7 @@ FROM jupyter/scipy-notebook
 
 MAINTAINER Jupyter Project <jupyter@googlegroups.com>
 
+
 USER root
 
 # R pre-requisites
@@ -56,7 +57,48 @@ RUN julia -e 'Pkg.add("IJulia")' && \
 # Show Julia where conda libraries are
 # Add essential packages
 RUN echo "push!(Libdl.DL_LOAD_PATH, \"$CONDA_DIR/lib\")" > /home/$NB_USER/.juliarc.jl && \
-    julia -e 'Pkg.add("Gadfly")' && julia -e 'Pkg.add("RDatasets")' && julia -F -e 'Pkg.add("HDF5")'
+    julia -e 'Pkg.add("Gadfly")' && julia -e 'Pkg.add("RDatasets")' && julia --startup-file=yes -e 'Pkg.add("HDF5")'
 
 # Precompile Julia pakcages
 RUN julia -e 'using IJulia' && julia -e 'using Gadfly' && julia -e 'using RDatasets'&& julia -e 'using HDF5'
+
+
+USER root
+
+#Install Snowflake dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends  libssl-dev libffi-dev
+
+USER $NB_USER
+
+# Install Tensorflow
+RUN conda install --quiet --yes tensorflow=1.0.0 && conda clean -tipsy
+RUN conda install --quiet --yes -n python2 tensorflow=1.0.0 && conda clean -tipsy
+
+# Install Boto
+RUN conda install -c anaconda boto3=1.4.3
+
+#Install Snowflake Packages
+RUN pip2 install --upgrade pip
+RUN pip3 install --upgrade pip
+
+RUN pip2 install --upgrade snowflake-connector-python
+RUN pip2 install --upgrade snowflake-sqlalchemy
+
+RUN pip3 install --upgrade --ignore-installed snowflake-connector-python
+RUN pip3 install --upgrade --ignore-installed snowflake-sqlalchemy
+
+RUN conda install --quiet --yes -c anaconda pillow=4.0.0
+RUN conda install --quiet --yes -c anaconda -n python2 pillow=4.0.0 && conda clean -tipsy
+
+RUN conda install --quiet --yes -c conda-forge keras=1.0.7
+RUN conda install --quiet --yes -c conda-forge -n python2 keras=1.0.7 && conda clean -tipsy
+
+
+RUN conda install --quiet --yes -c anaconda statsmodels=0.8.0
+RUN conda install --quiet --yes -c anaconda statsmodels=0.8.0 && conda clean -tipsy
+
+
+ENV KERAS_BACKEND=tensorflow
+
+CMD /usr/local/bin/start-singleuser.sh
